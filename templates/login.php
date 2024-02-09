@@ -1,9 +1,46 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <title>Přihlášení</title>
-    <style>
+
+<div class="container" id="login-container">
+    <h1>Přihlášení</h1>
+    <form id="login-form" method="post" action="index.php">
+    <input type="hidden" name="login" value="1">
+    <div class="form-group">
+            <label for="jmeno_login">Uživatelské jméno:</label>
+            <input type="text" id="jmeno_login" name="jmeno_login" required>
+        </div>
+
+        <div class="form-group">
+            <label for="heslo_login">Heslo:</label>
+            <input type="password" id="heslo_login" name="heslo_login" required>
+        </div>
+        <div class="button-wrapper">
+            <button type="submit" class="btn">Přihlásit se</button>
+        </div>
+    </form>
+    <p>Nemáte účet? <a href="#" onclick="showRegister()">Vytvoření účtu</a></p>
+</div>
+
+<div class="container" id="register-container" style="display:none;">
+    <h1>Registrace</h1>
+    <form id="register-form" method="post" action="index.php">
+    <input type="hidden" name="register" value="1">
+    <div class="form-group">
+            <label for="jmeno_registrace">Uživatelské jméno:</label>
+            <input type="text" id="jmeno_registrace" name="jmeno_registrace" required>
+        </div>
+
+        <div class="form-group">
+            <label for="heslo_registrace">Heslo:</label>
+            <input type="password" id="heslo_registrace" name="heslo_registrace" required>
+        </div>
+        <div class="button-wrapper">
+            <button type="submit" class="btn">Registrovat se</button>
+        </div>
+    </form>
+    <p>Máte účet? <a href="#" onclick="showLogin()">Přihlášení</a></p>
+</div>
+
+
+<style>
 body {
             background: rgb(0,212,255);
             background: linear-gradient(45deg, rgba(0,212,255,1) 0%, rgba(11,3,45,1) 100%);
@@ -83,63 +120,6 @@ body {
             color: rgba(0, 212, 255, 0.9);
         }  
         </style>
-</head>
-<body>
 
+<script src="./scripts/login.js"></script>
 
-
-
-<div class="container" id="login-container">
-    <h1>Přihlášení</h1>
-    <form id="login-form" method="post" action="index.php">
-    <input type="hidden" name="login" value="1">
-    <div class="form-group">
-            <label for="jmeno_login">Uživatelské jméno:</label>
-            <input type="text" id="jmeno_login" name="jmeno_login" required>
-        </div>
-
-        <div class="form-group">
-            <label for="heslo_login">Heslo:</label>
-            <input type="password" id="heslo_login" name="heslo_login" required>
-        </div>
-        <div class="button-wrapper">
-            <button type="submit" class="btn">Přihlásit se</button>
-        </div>
-    </form>
-    <p>Nemáte účet? <a href="#" onclick="showRegister()">Vytvoření účtu</a></p>
-</div>
-
-<div class="container" id="register-container" style="display:none;">
-    <h1>Registrace</h1>
-    <form id="register-form" method="post" action="index.php">
-    <input type="hidden" name="register" value="1">
-    <div class="form-group">
-            <label for="jmeno_registrace">Uživatelské jméno:</label>
-            <input type="text" id="jmeno_registrace" name="jmeno_registrace" required>
-        </div>
-
-        <div class="form-group">
-            <label for="heslo_registrace">Heslo:</label>
-            <input type="password" id="heslo_registrace" name="heslo_registrace" required>
-        </div>
-        <div class="button-wrapper">
-            <button type="submit" class="btn">Registrovat se</button>
-        </div>
-    </form>
-    <p>Máte účet? <a href="#" onclick="showLogin()">Přihlášení</a></p>
-</div>
-
-<script>
-function showRegister() {
-    document.getElementById('login-container').style.display = 'none';
-    document.getElementById('register-container').style.display = 'block';
-}
-
-function showLogin() {
-    document.getElementById('login-container').style.display = 'block';
-    document.getElementById('register-container').style.display = 'none';
-}
-</script>
-
-</body>
-</html>

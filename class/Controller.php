@@ -6,6 +6,43 @@ class Controller {
         $this->Model = $model;
     }
 
+
+    public function zobrazRybky() {
+        if (!isset($_SESSION['user_logged_in']) || $_SESSION['UzivatelID'] != 1) {
+            header('Location: index.php?rybka');
+            exit;
+        }
+    
+        return $this->Model->ziskejRybky();
+    }
+    
+    public function inicializace() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ryba_id'])) {
+            $this->handleDeleteFish();
+        }
+    }
+
+    
+    public function zobrazAkvarko() {
+        if (!isset($_SESSION['user_logged_in'])) {
+            header('Location: login.php');
+            exit;
+        }
+    
+        return $this->Model->ziskejVsechnyRybky();
+    }
+
+    public function zobrazMojeRyba() {
+        $uzivatelID = $_SESSION['UzivatelID'] ?? null;
+        if (!$uzivatelID) {
+            header('Location: login.php');
+            exit;
+        }
+    
+        return $this->Model->ziskejRybuUzivatele($uzivatelID);
+    }
+    
+
     public function zkontroluj() {
         if (isset($_GET['akvarko'])) {
             $this->Model->nastavStranku('akvarko');
@@ -17,6 +54,7 @@ class Controller {
             $this->Model->nastavStranku('admin');
         }
     }
+
 
     public function handleDeleteFish() {
         if (isset($_POST['ryba_id'])) {
@@ -34,7 +72,6 @@ class Controller {
                 $_SESSION['user_logged_in'] = true;
                 $_SESSION['username'] = $username;
     
-                // Kontrola, zda je uživatel admin
                 if ($_SESSION['UzivatelID'] == 1) {
                     header('Location: index.php?admin');
                 } else {
@@ -59,6 +96,20 @@ class Controller {
             }
         }
     }
+
+    public function pridejAktualizujRybu($uzivatelID, $nazevRybky, $barvaRybky) {
+        if (!isset($_SESSION['user_logged_in'])) {
+            header('Location: login.php');
+            exit;
+        }
+    
+        $this->Model->aktualizujRybu($uzivatelID, $nazevRybky, $barvaRybky);
+        header('Location: index.php?akvarko');
+        exit;
+    }
     
 }
+
+
+
 ?>

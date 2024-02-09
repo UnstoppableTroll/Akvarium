@@ -1,7 +1,6 @@
 <?php
 require_once 'Config.php';
 
-
 class Model {
     private $conn;
     private $strana = 'akvarko';
@@ -13,8 +12,6 @@ class Model {
         $this->conn = $database->getConnection();
         
     }
-
-
 
     public function registraceUzivatele($username, $password) {
         try {
@@ -31,28 +28,61 @@ class Model {
         }
     }
     
+    public function ziskejRybky($limit = 10) {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM Ryba ORDER BY RybaID DESC LIMIT :limit");
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch(PDOException $e) {
+            error_log('Chyba při načítání rybek: ' . $e->getMessage());
+            return [];
+        }
+    }
+    
+    public function ziskejVsechnyRybky() {
+        try {
+            $stmt = $this->conn->prepare("SELECT Jmeno, Barva FROM Ryba");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch(PDOException $e) {
+            error_log('Chyba při načítání rybek: ' . $e->getMessage());
+            return [];
+        }
+    }
 
+    public function ziskejRybuUzivatele($uzivatelID) {
+        try {
+            $stmt = $this->conn->prepare("SELECT Jmeno, Barva FROM Ryba WHERE UzivatelID = :UzivatelID LIMIT 1");
+            $stmt->bindParam(':UzivatelID', $uzivatelID, PDO::PARAM_INT);
+            $stmt->execute();
+    
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch(PDOException $e) {
+            error_log('Chyba při načítání ryby uživatele: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
 
     public function prihlaseniUzivatele($username, $password) {
         try {
-            // Příprava SQL dotazu pro vyhledání uživatele a získání jeho ID
+            
             $stmt = $this->conn->prepare("SELECT UzivatelID, Heslo FROM uzivatel WHERE Jmeno = :username");
     
-            // Vazba hodnot
+      
             $stmt->bindParam(':username', $username);
     
-            // Spuštění dotazu
+          
             $stmt->execute();
     
             if ($stmt->rowCount() == 1) {
-                // Získání dat z databáze
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
                 $hashPassword = $row['Heslo'];
                 $uzivatelID = $row['UzivatelID'];
     
-                // Ověření hesla
+            
                 if (password_verify($password, $hashPassword)) {
-                    // Přihlášení úspěšné, nastavení UzivatelID do session
                     session_start();
                     $_SESSION['UzivatelID'] = $uzivatelID;
                     return true;
@@ -61,11 +91,9 @@ class Model {
     
             return false;
         } catch(PDOException $e) {
-            // V případě chyby vrátit false
             return false;
         }
     }
-
 
     public function smazatRybu($rybaID) {
         try {
@@ -78,7 +106,7 @@ class Model {
             return false;
         }
     }
-    
+
     
     public function nastavStranku($stranka){
         $this->strana = $stranka;
@@ -98,4 +126,26 @@ class Model {
 
         }
     }
+
+    public function aktualizujRybu($uzivatelID, $nazevRybky, $barvaRybky) {
+        // Kontrola, zda již existuje záznam
+        $checkStmt = $this->conn->prepare("SELECT COUNT(*) FROM Ryba WHERE UzivatelID = :UzivatelID");
+        $checkStmt->bindParam(':UzivatelID', $uzivatelID);
+        $checkStmt->execute();
+    
+        if ($checkStmt->fetchColumn() > 0) {
+            $updateStmt = $this->conn->prepare("UPDATE Ryba SET Jmeno = :Jmeno, Barva = :Barva WHERE UzivatelID = :UzivatelID");
+            $updateStmt->bindParam(':Jmeno', $nazevRybky);
+            $updateStmt->bindParam(':Barva', $barvaRybky);
+            $updateStmt->bindParam(':UzivatelID', $uzivatelID);
+            $updateStmt->execute();
+        } else {
+            $insertStmt = $this->conn->prepare("INSERT INTO Ryba (UzivatelID, Jmeno, Barva) VALUES (:UzivatelID, :Jmeno, :Barva)");
+            $insertStmt->bindParam(':UzivatelID', $uzivatelID);
+            $insertStmt->bindParam(':Jmeno', $nazevRybky);
+            $insertStmt->bindParam(':Barva', $barvaRybky);
+            $insertStmt->execute();
+        }
+    }
+    
 }

@@ -1,39 +1,27 @@
 <?php
 include 'templates/head.php';
-require_once 'class/Config.php'; 
+require_once 'class/Config.php';
 
-$database = new Database();
-$conn = $database->getConnection();
-
-$uzivatelID = $_SESSION['UzivatelID'] ?? null;
-
-$rybaData = null;
-
-if ($uzivatelID) {
-    $stmt = $conn->prepare("SELECT Jmeno, Barva FROM Ryba WHERE UzivatelID = :UzivatelID LIMIT 1");
-    $stmt->bindParam(':UzivatelID', $uzivatelID);
-    $stmt->execute();
-
-    $rybaData = $stmt->fetch(PDO::FETCH_ASSOC);
-}
+$model = new Model();
+$controller = new Controller($model);
+$rybaData = $controller->zobrazMojeRyba();
 ?>
 
 
-
 <div class="container">
-    <div class="arrow left-arrow" onclick="changeFishColor('left')">&#9664;</div> <!-- Šipka vlevo -->
+    <div class="arrow left-arrow" onclick="changeFishColor('left')">&#9664;</div>
 
     <div class="wrapper">
-    <?php if ($rybaData): ?>
-            <div class="fish <?= htmlspecialchars($rybaData['Barva']) ?>">
-                <div class="top-fin"></div>
-                <div class="fish-body"></div>
-                <div class="tail-fin"></div>
-                <div class="side-fin"></div>
-                <div class="scale scale-1"></div>
-                <div class="scale scale-2"></div>
-                <div class="scale scale-3"></div>
-            </div>
+        <?php if ($rybaData): ?>
+        <div class="fish <?= htmlspecialchars($rybaData['Barva']) ?>">
+            <div class="top-fin"></div>
+            <div class="fish-body"></div>
+            <div class="tail-fin"></div>
+            <div class="side-fin"></div>
+            <div class="scale scale-1"></div>
+            <div class="scale scale-2"></div>
+            <div class="scale scale-3"></div>
+        </div>
         <?php else: ?>
 
 
@@ -50,88 +38,62 @@ if ($uzivatelID) {
         </div>
         <?php endif; ?>
         <h1>Výběr rybičky</h1>
- 
+
     </div>
 
-    <form action="./templates/pridat_rybku.php" method="post">
+    <form action="index.php" method="post">
+        <input type="hidden" name="action" value="pridejAktualizujRybu">
         <div class="fish-name-input">
-            <label for="fishName">Název rybky:</label>          
-            <input type="text" id="fishName" name="fishName" value="<?= $rybaData ? htmlspecialchars($rybaData['Jmeno']) : '' ?>">
+            <label for="fishName">Název rybky:</label>
+            <input type="text" id="fishName" name="fishName"
+                value="<?= $rybaData ? htmlspecialchars($rybaData['Jmeno']) : '' ?>">
         </div>
-        <input type="hidden" id="fishColor" name="fishColor" value="<?= $rybaData ? htmlspecialchars($rybaData['Barva']) : 'orange-fish' ?>"> 
+        <input type="hidden" id="fishColor" name="fishColor"
+            value="<?= $rybaData ? htmlspecialchars($rybaData['Barva']) : 'orange-fish' ?>">
         <div class="button-wrapper">
-        <button type="submit" class="btn fill"><?= $rybaData ? 'Upravit' : 'Přidat' ?></button>
+            <button type="submit" class="btn fill"><?= $rybaData ? 'Upravit' : 'Přidat' ?></button>
         </div>
     </form>
 
-    <div class="arrow right-arrow" onclick="changeFishColor('right')">&#9654;</div> <!-- Šipka vpravo -->
+    <div class="arrow right-arrow" onclick="changeFishColor('right')">&#9654;</div>
 </div>
-<script>
-var colors = ['orange-fish', 'blue-fish', 'green-fish']; // Přidat další barvy podle potřeby
-var currentColorIndex = 0; // Počáteční index barvy
 
-function changeFishColor(direction) {
-    // Najděte kontejner rybky
-    var fish = document.querySelector('.fish');
-    var fishColorInput = document.getElementById('fishColor');
-    // Odstranění stávající barvy
-    fish.classList.remove(colors[currentColorIndex]);
+<script src="./scripts/moje_ryba.js"></script>
 
-    // Aktualizace indexu barvy
-    if (direction === 'right') {
-        currentColorIndex = (currentColorIndex + 1) % colors.length;
-    } else if (direction === 'left') {
-        currentColorIndex = (currentColorIndex - 1 + colors.length) % colors.length;
-    }
 
-    // Přidání nové barvy
-    fish.classList.add(colors[currentColorIndex]);
-    fishColorInput.value = colors[currentColorIndex];
-}
-
-// Připojení událostí kliknutí na šipky
-document.querySelector('.left-arrow').addEventListener('click', function() {
-    changeFishColor('left'); // Kliknutí doleva - předchozí barva
-});
-
-document.querySelector('.right-arrow').addEventListener('click', function() {
-    changeFishColor('right'); // Kliknutí doprava - další barva
-});</script>
 <style>
-
-
 body {
-  /* solid background */
-  background: rgb(0,212,255);
-  margin: 0;
-  /* gradient background*/
-  background: linear-gradient(45deg, rgba(0,212,255,1) 0%, rgba(11,3,45,1) 100%);    
-  
 
-  background-size: cover;
-  background-position: center;  
-  
+    background: rgb(0, 212, 255);
+    margin: 0;
+
+    background: linear-gradient(45deg, rgba(0, 212, 255, 1) 0%, rgba(11, 3, 45, 1) 100%);
+
+
+    background-size: cover;
+    background-position: center;
+
 
 }
 
 .container {
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  background-color: rgba(17, 25, 40, 0.25);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.125);  
-  padding: 38px;
-  filter: drop-shadow(0 30px 10px rgba(0,0,0,0.125));
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%); 
-  top: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(17, 25, 40, 0.25);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.125);
+    padding: 38px;
+    filter: drop-shadow(0 30px 10px rgba(0, 0, 0, 0.125));
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
 }
 
@@ -140,79 +102,79 @@ body {
     width: 100%;
     height: 100%;
     margin: 74px 27px 33px -2px;
-    
-  
+
+
 }
 
 
 
-h1{
-  font-family: 'Righteous', sans-serif;
-    color: rgba(255,255,255,0.98);
+h1 {
+    font-family: 'Righteous', sans-serif;
+    color: rgba(255, 255, 255, 0.98);
     text-transform: uppercase;
     font-size: 2.4rem;
     position: relative;
     top: -86px;
-    left:5%;
+    left: 5%;
     text-align: center;
 }
 
 p {
-  color: #fff;
-  font-family: 'Lato', sans-serif;
-  text-align: center;
-  font-size: 0.8rem;
-  line-height: 150%;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+    color: #fff;
+    font-family: 'Lato', sans-serif;
+    text-align: center;
+    font-size: 0.8rem;
+    line-height: 150%;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
-.button-wrapper{
-  margin-top: 18px;
+.button-wrapper {
+    margin-top: 18px;
 }
 
 .btn {
-  border: none;
-  padding: 12px 24px;
-  border-radius: 24px;
-  font-size: 12px;
-  font-size: 0.8rem;  
-  letter-spacing: 2px;  
-  cursor: pointer;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 12px;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    cursor: pointer;
 }
 
-.btn + .btn {
-  margin-left: 10px;
+.btn+.btn {
+    margin-left: 10px;
 }
 
 .outline {
-  background: transparent;
-  color: rgba(0, 212, 255, 0.9);
-  border: 1px solid rgba(0, 212, 255, 0.6);
-  transition: all .3s ease;
-  
+    background: transparent;
+    color: rgba(0, 212, 255, 0.9);
+    border: 1px solid rgba(0, 212, 255, 0.6);
+    transition: all .3s ease;
+
 }
 
-.outline:hover{
-  transform: scale(1.125);
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.9);
-  transition: all .3s ease;  
+.outline:hover {
+    transform: scale(1.125);
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.9);
+    transition: all .3s ease;
 }
 
 .fill {
-  background: rgba(0, 212, 255, 0.9);
-  color: rgba(255,255,255,0.95);
-  filter: drop-shadow(0);
-  font-weight: bold;
-  transition: all .3s ease; 
+    background: rgba(0, 212, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+    filter: drop-shadow(0);
+    font-weight: bold;
+    transition: all .3s ease;
 }
 
-.fill:hover{
-  transform: scale(1.125);  
-  border-color: rgba(255, 255, 255, 0.9);
-  filter: drop-shadow(0 10px 5px rgba(0,0,0,0.125));
-  transition: all .3s ease;    
+.fill:hover {
+    transform: scale(1.125);
+    border-color: rgba(255, 255, 255, 0.9);
+    filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.125));
+    transition: all .3s ease;
 }
 
 
@@ -314,7 +276,7 @@ p {
     -moz-transform: rotate(25deg) skewX(-18deg) skewY(-15deg);
     -ms-transform: rotate(25deg) skewX(-18deg) skewY(-15deg);
     -o-transform: rotate(25deg) skewX(-18deg) skewY(-15deg);
-  
+
 }
 
 .blue-fish .tail-fin {
@@ -404,22 +366,27 @@ p {
     left: 53px;
     bottom: -37px;
 }
+
 .arrow {
-  position: absolute;
-  top: 45%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 36px; /* Zvětšení velikosti šipky */
-  color: rgba(255, 255, 255, 0.7); /* Bílá barva s průhledností */
-  user-select: none;
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 36px;
+    /* Zvětšení velikosti šipky */
+    color: rgba(255, 255, 255, 0.7);
+    /* Bílá barva s průhledností */
+    user-select: none;
 }
 
 .left-arrow {
-  left: 20px; /* Posunutí dále od levého kraje */
+    left: 20px;
+    /* Posunutí dále od levého kraje */
 }
 
 .right-arrow {
-  right: 20px; /* Posunutí dále od pravého kraje */
+    right: 20px;
+    /* Posunutí dále od pravého kraje */
 }
 
 .green-fish .fish-body,
@@ -427,17 +394,23 @@ p {
 .green-fish .tail-fin,
 .green-fish .side-fin,
 .green-fish .scale {
-  background-color: green; /* Zelená barva pro části rybky */
-}.green-fish .tail-fin:before {
+    background-color: green;
+    /* Zelená barva pro části rybky */
+}
+
+.green-fish .tail-fin:before {
     background-color: green;
 }
+
 .blue-fish .fish-body,
 .blue-fish .top-fin,
 .blue-fish .tail-fin,
 .blue-fish .side-fin,
 .blue-fish .scale {
-    background-color: #0098e0; /* Modrá barva pro části rybky */
+    background-color: #0098e0;
+    /* Modrá barva pro části rybky */
 }
+
 .blue-fish .tail-fin:before {
     background-color: #0098e0;
 }
@@ -445,12 +418,13 @@ p {
 .fish-name-input {
     text-align: center;
     margin-top: 20px;
-    padding-top:60px
+    padding-top: 60px
 }
 
 .fish-name-input label {
     margin-right: 10px;
-    color: rgba(255, 255, 255, 0.9); /* Bílá barva textu */
+    color: rgba(255, 255, 255, 0.9);
+    /* Bílá barva textu */
     font-weight: bold;
 }
 
@@ -461,7 +435,8 @@ p {
     color: rgba(0, 212, 255, 0.9);
     background: transparent;
     transition: all .3s ease;
-    margin-right: 10px; /* Odsazení tlačítka od textového pole */
+    margin-right: 10px;
+    /* Odsazení tlačítka od textového pole */
 }
 
 .fish-name-input input[type="text"]:focus {
@@ -474,18 +449,20 @@ p {
     padding: 12px 24px;
     border-radius: 24px;
     border: none;
-    background-color: rgba(0, 212, 255, 0.9); /* Modrá barva tlačítka */
-    color: rgba(255,255,255,0.95); /* Bílá barva textu */
+    background-color: rgba(0, 212, 255, 0.9);
+    /* Modrá barva tlačítka */
+    color: rgba(255, 255, 255, 0.95);
+    /* Bílá barva textu */
     cursor: pointer;
     font-size: 0.8rem;
     letter-spacing: 2px;
-    transition: all .3s ease; 
+    transition: all .3s ease;
 }
 
 .fish-name-input button:hover {
     transform: scale(1.125);
     background-color: rgba(255, 255, 255, 0.9);
     color: rgba(0, 212, 255, 0.9);
-    filter: drop-shadow(0 10px 5px rgba(0,0,0,0.125));
+    filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.125));
 }
 </style>

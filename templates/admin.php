@@ -2,40 +2,15 @@
 include 'templates/head.php';
 require_once './class/Config.php';
 
-
-if (!isset($_SESSION['user_logged_in']) || $_SESSION['UzivatelID'] != 1) {
-    header('Location: index.php?rybka'); // Přesměrování na přihlašovací stránku
-    exit;
-}
-
 $model = new Model();
 $controller = new Controller($model);
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ryba_id'])) {
-    $controller->handleDeleteFish();
-}
-
-// Vytvoření instance databáze
-$database = new Database();
-$conn = $database->getConnection();
-
-// Získání ID přihlášeného uživatele
-$uzivatelID = $_SESSION['UzivatelID'] ?? null;
-
-$rybky = [];
-if ($uzivatelID) {
-    // Příprava dotazu pro načtení rybek uživatele
-    $stmt = $conn->prepare("SELECT * FROM Ryba ORDER BY RybaID DESC LIMIT 10");
-  
-    $stmt->execute();
-    $rybky = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+$controller->inicializace();
+$rybky = $controller->zobrazRybky();
 ?>
 
 <div class="container">
     <div class="wrapper">
         <h1>Správa rybiček</h1>
-
- 
         <table>
             <tr>
                 <th>ID</th>
@@ -58,18 +33,16 @@ if ($uzivatelID) {
     </div>
 </div>
 <style>
+
+
 body {
     /* solid background */
     background: rgb(0, 212, 255);
     margin: 0;
     /* gradient background*/
     background: linear-gradient(45deg, rgba(0, 212, 255, 1) 0%, rgba(11, 3, 45, 1) 100%);
-
-
     background-size: cover;
     background-position: center;
-
-
 }
 
 .container {
@@ -174,13 +147,15 @@ p {
 }
 
 table {
-    width: 80%; /* Upravte podle potřeby */
+    width: 80%;
+    /* Upravte podle potřeby */
     margin: auto;
     border-collapse: collapse;
     border-spacing: 0;
 }
 
-th, td {
+th,
+td {
     border-bottom: 1px solid rgba(255, 255, 255, 0.125);
     padding: 8px;
     text-align: left;
@@ -189,7 +164,7 @@ th, td {
 th {
     background-color: rgba(0, 212, 255, 0.6);
     color: white;
-        text-align: center;
+    text-align: center;
 
 }
 
@@ -215,5 +190,4 @@ input[type="submit"] {
 input[type="submit"]:hover {
     background-color: rgba(0, 212, 255, 1);
 }
-
 </style>

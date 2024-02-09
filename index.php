@@ -1,6 +1,28 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start(); 
+require_once 'class/Config.php';
+require_once 'class/Model.php';
+require_once 'class/Controller.php';
+require_once 'class/View.php';
 
+$model = new Model();
+$controller = new Controller($model);
+$view = new View($model);
+
+if (isset($_POST['action'])) {
+    switch ($_POST['action']) {
+        case 'pridejAktualizujRybu':
+            $uzivatelID = $_SESSION['UzivatelID'] ?? null;
+            $nazevRybky = $_POST['fishName'];
+            $barvaRybky = $_POST['fishColor'];
+            if ($uzivatelID) {
+                $controller->pridejAktualizujRybu($uzivatelID, $nazevRybky, $barvaRybky);
+            }
+            break;
+    }
+}
 
 
 if (isset($_GET['logout'])) {
@@ -24,10 +46,10 @@ $c = new Controller($m);
 $v = new View($m);
 
 
-// Zpracování požadavků na přihlášení nebo registraci
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['login'])) {
-        // Zpracování přihlášení
         $loginError = $c->handleLogin($_POST['jmeno_login'], $_POST['heslo_login']);
     } elseif (isset($_POST['register'])) {
         // Zpracování registrace
@@ -36,12 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-// Rozhodnutí, co zobrazit: přihlašovací/registrační formulář nebo obsah stránky
+
 if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
-    // Uživatel je přihlášen, zobrazit obsah
     $c->zkontroluj();
     $v->vypisObsah();
 } else {
-    // Uživatel není přihlášen, zobrazit přihlašovací/registrační formulář
     $v->showLoginRegisterForm(isset($loginError) ? $loginError : '', isset($registerMessage) ? $registerMessage : '');
 }
